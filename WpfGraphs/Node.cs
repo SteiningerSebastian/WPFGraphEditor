@@ -9,8 +9,10 @@ using System.Windows;
 
 namespace WpfGraphs
 {
+    [Serializable]
     public class Node : INotifyPropertyChanged
     {
+        public Node() { }
         private static Random random = new Random();
         private static uint _id = 0;
         private static uint _Id
@@ -26,7 +28,12 @@ namespace WpfGraphs
             }
         }
 
-        public uint Id { get; } = Node._Id;
+        public static void ResetId()
+        {
+            _Id = 0;
+        }
+
+        public uint Id { get; set; } = Node._Id;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 

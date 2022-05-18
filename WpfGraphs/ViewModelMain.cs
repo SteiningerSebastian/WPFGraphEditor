@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -11,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Newtonsoft.Json;
 
 namespace WpfGraphs
 {
@@ -23,6 +25,18 @@ namespace WpfGraphs
 
     public class ViewModelMain : INotifyPropertyChanged
     {
+        private static string FilePath = "./my.graph";
+        public ViewModelMain()
+        {
+            if (File.Exists(FilePath))
+            {
+                string json = File.ReadAllText(FilePath);
+                if(json != null && json != String.Empty)
+                    MainGraph = JsonConvert.DeserializeObject<Graph>(json) ?? throw new NullReferenceException("Could not create the object!");
+            }
+            GraphComputeHandler.Instance.OnStart();
+        }
+
         public static double NodeSize { get; set; } = 45;
 
         private Tool _toolSelected = Tool.Node;
@@ -133,7 +147,42 @@ namespace WpfGraphs
                 {
                     MainGraph.Edges.Clear();
                     MainGraph.Nodes.Clear();
+                    Edge.ResetId();
+                    Node.ResetId();
                     PropertyChange(nameof(MainGraph));
+                }));
+            }
+        }
+
+        private DelegateCommand _startComputeCommand;
+
+        public DelegateCommand StartComputeCommand
+        {
+            get
+            {
+                return _startComputeCommand ?? (_startComputeCommand = new DelegateCommand((o) =>
+                {
+                    return true;
+                }, (o) =>
+                {
+                    GraphComputeHandler.Instance.Compute(MainGraph);
+                }));
+            }
+        }
+
+        private DelegateCommand _saveCommand;
+
+        public DelegateCommand SaveCommand
+        {
+            get
+            {
+                return _saveCommand ?? (_saveCommand = new DelegateCommand((o) =>
+                {
+                    return true;
+                }, (o) =>
+                {
+                    string json = JsonConvert.SerializeObject(MainGraph);
+                    File.WriteAllText(FilePath, json);
                 }));
             }
         }

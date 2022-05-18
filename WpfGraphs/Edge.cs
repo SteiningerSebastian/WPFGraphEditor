@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -9,8 +10,11 @@ using System.Windows;
 
 namespace WpfGraphs
 {
+    [Serializable]
     public class Edge : INotifyPropertyChanged
     {
+        public Edge() { }
+
         private static uint _id = 0;
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -26,6 +30,11 @@ namespace WpfGraphs
             {
                 _id = value;
             }
+        }
+
+        public static void ResetId()
+        {
+            _Id = 0;
         }
 
         public uint Id { get; } = Edge._Id;
@@ -71,6 +80,7 @@ namespace WpfGraphs
             }
         }
 
+        [JsonIgnore]
         public Thickness DisplayMarginMiddle
         {
             get => new Thickness((NodeBase.X + NodeConnected.X) / 2 - 10, (NodeBase.Y + NodeConnected.Y) / 2 - 10, -1, -1);

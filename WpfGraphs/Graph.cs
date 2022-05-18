@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,8 +10,13 @@ using System.Threading.Tasks;
 
 namespace WpfGraphs
 {
+    [Serializable]
     public class Graph : INotifyPropertyChanged
     {
+        public Graph()
+        {
+
+        }
         public ObservableCollection<Node> Nodes { get; private set; } = new ObservableCollection<Node>();
         public ObservableCollection<Edge> Edges { get; private set; } = new ObservableCollection<Edge>();
 
@@ -82,6 +88,14 @@ namespace WpfGraphs
             e.Highlight = true;
         }
 
+        public void ResetHighLight()
+        {
+            foreach(Edge edge in Edges)
+            {
+                edge.Highlight = false;
+            }
+        }
+
         public void StopHighLight(uint nodeBase, uint nodeConnected) => StopHighLight(GetNodeById(nodeBase), GetNodeById(nodeConnected));
         public void StopHighLight(Node nodeBase, Node nodeConnected)
         {
@@ -104,23 +118,58 @@ namespace WpfGraphs
             return Nodes.FirstOrDefault(e => e.Id == Id) ?? throw new ArgumentOutOfRangeException("A edge with the given id does not exist!");
         }
 
-        public uint[][] GetGraphAsCheckedArray()
+        public (uint, double)[][] GetGraphAsCheckedArray()
         {
-            uint[][] graph = new uint[Nodes.Count][];
+            (uint, double)[][] graph = new (uint, double)[Nodes.Count][];
             SortedDictionary<uint, HashSet<(uint, double)>> dicHsGraph = new SortedDictionary<uint, HashSet<(uint, double)>>();
+
+            foreach (Node node in Nodes)
+            {
+                if (!dicHsGraph.ContainsKey(node.Id))
+                    dicHsGraph.Add(node.Id, new HashSet<(uint, double)>());
+            }
 
             foreach (Edge edge in Edges)
             {
-                if (!dicHsGraph.ContainsKey(edge.NodeBase.Id))
-                    dicHsGraph.Add(edge.NodeBase.Id, new HashSet<(uint, double)>());
                 dicHsGraph[edge.NodeBase.Id].Add((edge.NodeConnected.Id, edge.Weight));
                 if (edge.IsDirectional == false)
                 {
-                    if (!dicHsGraph.ContainsKey(edge.NodeConnected.Id))
-                        dicHsGraph.Add(edge.NodeConnected.Id, new HashSet<(uint, double)>());
                     dicHsGraph[edge.NodeConnected.Id].Add((edge.NodeBase.Id, edge.Weight));
                 }
 
+            }
+
+            int i = 0;
+            foreach (var kvp in dicHsGraph)
+            {
+                List<(uint, double)> edgeList = new();
+                HashSet<(uint, double)> edges = kvp.Value;
+                graph[i] = edges.OrderBy(e => e.Item1).ToArray();
+                i++;
+            }
+
+            return graph;
+        }
+
+        public double[,] GetGraphAsMatrix()
+        {
+            double[,] graph = new double[Nodes.Count, Nodes.Count];
+            List<uint> nodes = Nodes.OrderBy(n => n.Id).Select(n => n.Id).ToList();
+
+            (uint, double)[][] graphCA = GetGraphAsCheckedArray();
+            for (int i = 0; i < graph.GetLength(0); i++)
+            {
+                for (int j = 0; j < graph.GetLength(1); j++)
+                {
+                    graph[i,j] = -1;
+                }
+            }
+            for (int i = 0; i < graphCA.Length; i++)
+            {
+                foreach (var edge in graphCA[i])
+                {
+                    graph[i, nodes.IndexOf(edge.Item1)] = edge.Item2;
+                }
             }
             return graph;
         }

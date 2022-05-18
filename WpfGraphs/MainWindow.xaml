@@ -65,7 +65,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type local:Edge}">
-                        <TextBox Text="{Binding Weight}" Width="20" Height="20" Margin="{Binding DisplayMarginMiddle}"/>
+                        <TextBox Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}" Width="20" Height="20" Margin="{Binding DisplayMarginMiddle}"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -211,6 +211,26 @@
             <Grid>
                 <Line X1="3" Y1="3" X2="43" Y2="43" Stroke="Red" StrokeThickness="5"/>
                 <Line X1="3" Y2="3" X2="43" Y1="43" Stroke="Red" StrokeThickness="5"/>
+            </Grid>
+        </Button>
+        <Button x:Name="btnCalc" Grid.Row="0" Grid.Column="0" Width="50" HorizontalAlignment="Left" Height="50" VerticalAlignment="Top" Margin="0,200,0,0" Command="{Binding StartComputeCommand}">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+            </Button.Style>
+            <Grid>
+                <TextBlock Text="Start" FontSize="18"/>
+            </Grid>
+        </Button>
+        <Button x:Name="btnSave" Grid.Row="0" Grid.Column="0" Width="50" HorizontalAlignment="Left" Height="50" VerticalAlignment="Top" Margin="0,250,0,0" Command="{Binding SaveCommand}">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+            </Button.Style>
+            <Grid>
+                <TextBlock Text="Save" FontSize="18"/>
             </Grid>
         </Button>
     </Grid>
