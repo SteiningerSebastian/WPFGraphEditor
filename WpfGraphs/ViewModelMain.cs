@@ -31,7 +31,7 @@ namespace WpfGraphs
             if (File.Exists(FilePath))
             {
                 string json = File.ReadAllText(FilePath);
-                if(json != null && json != String.Empty)
+                if (json != null && json != String.Empty)
                     MainGraph = JsonConvert.DeserializeObject<Graph>(json) ?? throw new NullReferenceException("Could not create the object!");
             }
             GraphComputeHandler.Instance.OnStart();
@@ -196,7 +196,7 @@ namespace WpfGraphs
                 FirstNodeSelected = MainGraph.GetNodeById(Id);
                 SecondNodeSelected = null;
             }
-            else if (FirstNodeSelected != null && SecondNodeSelected == null )
+            else if (FirstNodeSelected != null && SecondNodeSelected == null)
             {
                 SecondNodeSelected = MainGraph.GetNodeById(Id);
             }
@@ -205,15 +205,33 @@ namespace WpfGraphs
                 SecondNodeSelected = null;
                 FirstNodeSelected = MainGraph.GetNodeById(Id);
             }
-            if(SecondNodeSelected != null && FirstNodeSelected != null && SecondNodeSelected != FirstNodeSelected)
+            if (SecondNodeSelected != null && FirstNodeSelected != null && SecondNodeSelected != FirstNodeSelected)
             {
-                MakeEdge(ToolSelected==Tool.Arrow?true:false);
+                MakeEdge(ToolSelected == Tool.Arrow ? true : false);
             }
         }
 
         public void MakeEdge(bool isDirectional)
         {
-            MainGraph.AddEdge(FirstNodeSelected??throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional);
+            if (MainGraph.EdgeExist(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional))
+                MainGraph.RemoveEdge(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional);
+            else if (MainGraph.EdgeExist(SecondNodeSelected ?? throw new NullReferenceException(), FirstNodeSelected ?? throw new NullReferenceException(), isDirectional))
+            {
+                MainGraph.RemoveEdge(SecondNodeSelected ?? throw new NullReferenceException(), FirstNodeSelected ?? throw new NullReferenceException(), isDirectional);
+                MainGraph.AddEdge(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional);
+            }
+            else if (MainGraph.EdgeExist(SecondNodeSelected ?? throw new NullReferenceException(), FirstNodeSelected ?? throw new NullReferenceException(), !isDirectional))
+            {
+                MainGraph.RemoveEdge(SecondNodeSelected ?? throw new NullReferenceException(), FirstNodeSelected ?? throw new NullReferenceException(), !isDirectional);
+                MainGraph.AddEdge(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional);
+            }
+            else if (MainGraph.EdgeExist(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), !isDirectional))
+            {
+                MainGraph.RemoveEdge(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), !isDirectional);
+                MainGraph.AddEdge(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional);
+            }
+            else
+                MainGraph.AddEdge(FirstNodeSelected ?? throw new NullReferenceException(), SecondNodeSelected ?? throw new NullReferenceException(), isDirectional);
         }
 
         public void CanvasClicked()

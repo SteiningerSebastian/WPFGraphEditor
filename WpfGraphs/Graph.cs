@@ -24,7 +24,47 @@ namespace WpfGraphs
 
         public Edge? GetEdgeExist(Edge edge)
         {
-            return Edges.FirstOrDefault(e => ((e.NodeBase.Id == edge.NodeBase.Id && e.NodeConnected.Id == edge.NodeConnected.Id) || (e.NodeBase.Id == edge.NodeConnected.Id && e.NodeConnected.Id == edge.NodeBase.Id)));
+            return Edges.FirstOrDefault(e => ((e.NodeBase.Id == edge.NodeBase.Id && e.NodeConnected.Id == edge.NodeConnected.Id) || (e.NodeBase.Id == edge.NodeConnected.Id && e.NodeConnected.Id == edge.NodeBase.Id && !e.IsDirectional && !edge.IsDirectional)) && e.IsDirectional == edge.IsDirectional);
+        }
+
+        public bool EdgeExist(Edge? edge)
+        {
+            if(edge == null)
+                return false;
+            return GetEdgeExist(edge)==null?false:true;
+        }
+
+        public bool EdgeExist(Node nodeBase, Node nodeConnected, bool isDirectional = true)
+        {
+            Edge edge = new Edge(nodeBase, nodeConnected, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            return EdgeExist(e);
+        }
+        public bool EdgeExist(Node nodeBase, Node nodeConnected, double weight, bool isDirectional = true)
+        {
+            Edge edge = new Edge(nodeBase, nodeConnected, weight, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            return EdgeExist(e);
+        }
+
+        public bool EdgeExist(uint idBase, uint idConnected, bool isDirectional = true)
+        {
+            Node nodeBase = Nodes.FirstOrDefault(n => n.Id == idBase) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+            Node nodeConnected = Nodes.FirstOrDefault(n => n.Id == idConnected) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+
+            Edge edge = new Edge(nodeBase, nodeConnected, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            return EdgeExist(e);
+        }
+
+        public bool EdgeExist(uint idBase, uint idConnected, double weight, bool isDirectional = true)
+        {
+            Node nodeBase = Nodes.FirstOrDefault(n => n.Id == idBase) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+            Node nodeConnected = Nodes.FirstOrDefault(n => n.Id == idConnected) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+
+            Edge edge = new Edge(nodeBase, nodeConnected, weight, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            return EdgeExist(e);
         }
 
         public Node AddNode()
@@ -77,6 +117,47 @@ namespace WpfGraphs
                 return e;
             Edges.Add(edge);
             return edge;
+        }
+
+        public void RemoveEdge(Node nodeBase, Node nodeConnected, bool isDirectional = true)
+        {
+            Edge edge = new Edge(nodeBase, nodeConnected, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            if (e == null)
+                return;
+            Edges.Remove(e);
+        }
+        public void RemoveEdge(Node nodeBase, Node nodeConnected, double weight, bool isDirectional = true)
+        {
+            Edge edge = new Edge(nodeBase, nodeConnected, weight, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            if (e == null)
+                return;
+            Edges.Remove(e);
+        }
+
+        public void RemoveEdge(uint idBase, uint idConnected, bool isDirectional = true)
+        {
+            Node nodeBase = Nodes.FirstOrDefault(n => n.Id == idBase) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+            Node nodeConnected = Nodes.FirstOrDefault(n => n.Id == idConnected) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+
+            Edge edge = new Edge(nodeBase, nodeConnected, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            if (e == null)
+                return;
+            Edges.Remove(e);
+        }
+
+        public void RemoveEdge(uint idBase, uint idConnected, double weight, bool isDirectional = true)
+        {
+            Node nodeBase = Nodes.FirstOrDefault(n => n.Id == idBase) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+            Node nodeConnected = Nodes.FirstOrDefault(n => n.Id == idConnected) ?? throw new ArgumentOutOfRangeException("A node with the given id does not exist!");
+
+            Edge edge = new Edge(nodeBase, nodeConnected, weight, isDirectional);
+            Edge? e = GetEdgeExist(edge);
+            if (e == null)
+                return;
+            Edges.Remove(e);
         }
 
         public Edge GetEdgeByNode(Node nodeBase, Node nodeConnected) => Edges.FirstOrDefault(e => (e.NodeBase.Id == nodeBase.Id && e.NodeConnected.Id == nodeConnected.Id) || (e.IsDirectional == false && e.NodeBase.Id == nodeConnected.Id && e.NodeConnected.Id == nodeBase.Id)) ?? throw new ArgumentOutOfRangeException("No edge with the given param. could be found!");
