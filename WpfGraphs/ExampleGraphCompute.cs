@@ -25,20 +25,53 @@ namespace WpfGraphs
             //graph.ResetHighLight();
             //HighLightPath(graph, path);
 
-            List<uint> path = ComputeWidthSearch(graph, matrix, 0, 16);
+            List<uint> path = ComputeBreadthSearch(graph, matrix, 0, 16);
             graph.ResetHighLight();
             HighLightPath(graph, path);
 
             return;
         }
 
-        private List<uint> ComputeWidthSearch(Graph graph, double[,] matrix, uint nodeIdMe, uint nodeIdSearched)
+        private List<uint> ComputeBreadthSearch(Graph graph, double[,] matrix, uint nodeIdMe, uint nodeIdSearched)
         {
-            throw new NotImplementedException();
+            List<(uint node, List<uint>? path, double cost)> depthSearch = new List<(uint, List<uint>? path, double cost)>();
+            depthSearch.Add((nodeIdMe, new List<uint>() { nodeIdMe }, 0));
+            double bestCost = Double.MaxValue;
+            List<uint> bestPath = new();
+            for (int i = 0; true; i++)
+            {
+                if (!(depthSearch.Count > i))
+                    break;
+                for (uint j = 0; j < matrix.GetLength(1); j++)
+                {
+                    System.Threading.Thread.Sleep(100);
+                    if (matrix[depthSearch[i].node, j] >= 0)
+                    {
+                        double cost = matrix[depthSearch[i].node, j];
+                        var liPath = depthSearch[i].path?.Select(e => e).ToList();
+                        liPath?.Add(j);
+                        if (!liPath.Select(p => liPath.Count(p_ => p_ == p)).Any(c => c > 1))
+                        {
+                            depthSearch.Add((j, liPath, depthSearch[i].cost + cost));
+                            if (j == nodeIdSearched)
+                            {
+                                if (depthSearch.Last().cost < bestCost)
+                                {
+                                    bestCost = depthSearch.Last().cost;
+                                    bestPath = depthSearch.Last().path ?? throw new ArgumentNullException();
+                                }
+                            }
+                        }
+                        graph.ResetHighLight();
+                        HighLightPath(graph, depthSearch.Last().path ?? throw new ArgumentNullException());
+                    }
+                }
+            }
+            return bestPath;
         }
 
 
-        private List<uint> ComputeSearchBuildPath(List<(uint, uint?)> depthSearch, uint nodeIdSearched)
+        private List<uint> ComputeDepthSearchBuildPath(List<(uint, uint?)> depthSearch, uint nodeIdSearched)
         {
             List<uint> path = new();
             path.Add(nodeIdSearched);
@@ -71,7 +104,7 @@ namespace WpfGraphs
                     if (nodeId.Item1 == nodeIdSearched)
                     {
                         depthSearch.Add((nodeIdSearched, depthSearch[i].Item1));
-                        List<uint> p = ComputeSearchBuildPath(depthSearch, nodeIdSearched);
+                        List<uint> p = ComputeDepthSearchBuildPath(depthSearch, nodeIdSearched);
                         double cost = 0;
                         for (int j = 0; j < p.Count - 1; j++)
                         {
@@ -82,17 +115,14 @@ namespace WpfGraphs
                             bestCost = cost;
                             bestPath = p;
                         }
-                        //depthSearch.RemoveRange(1, i);
-                        //i = 0;
                     }
-                    /*else*/
                     if (depthSearch[i].Item2 != nodeId.Item1 && depthSearch[i].Item1 != depthSearch[i].Item2)
                     {
                         depthSearch.Insert(i + 1, (nodeId.Item1, depthSearch[i].Item1));
-                        List<uint> path = ComputeSearchBuildPath(depthSearch, nodeId.Item1);
+                        List<uint> path = ComputeDepthSearchBuildPath(depthSearch, nodeId.Item1);
                         graph.ResetHighLight();
                         HighLightPath(graph, path);
-                        List<int> count = path.Select(p => path.Count(p_ => p_ == p)).ToList();
+                        //List<int> count = path.Select(p => path.Count(p_ => p_ == p)).ToList();
                         if (path.Select(p => path.Count(p_ => p_ == p)).Any(c => c > 1))
                         {
                             depthSearch.RemoveAt(i + 1);
@@ -106,7 +136,7 @@ namespace WpfGraphs
 
         private (double, List<uint>) ComputeDepthSearchRec(Graph graph, double[,] matrix, uint nodeIdMe, uint nodeIdSearched, double cost, List<uint> path)
         {
-            System.Threading.Thread.Sleep(500);
+            System.Threading.Thread.Sleep(10);
             if (path.Any(n => n == nodeIdMe))
                 return (double.MaxValue, null);
 
